@@ -1,0 +1,20 @@
+const {chromium}=require('playwright');
+const assert=require('node:assert/strict');
+const path=require('node:path');
+(async()=>{
+ const browser=await chromium.launch({headless:true,executablePath:process.env.BROWSER_EXECUTABLE});
+ const page=await browser.newPage({viewport:{width:1440,height:1100}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.goto('file://'+path.resolve(__dirname,'../index.html'));
+ await page.click('#singleStep');assert.equal(await page.evaluate(()=>ZrNbApp.simulation.tick),1);
+ for(let i=0;i<3;i++)await page.click('#step');
+ const state=await page.evaluate(()=>JSON.stringify(ZrNbApp.simulation.export()));
+ await page.click('#findHotspot');assert.equal(await page.locator('#microZoom').inputValue(),'3');assert.equal(await page.locator('#inspectorCounts>div').count(),5);
+ const selected=await page.locator('#inspectorTitle').textContent();const coords=selected.match(/\((\d+), (\d+)\)/);const local=await page.evaluate(([x,y])=>{const s=ZrNbApp.simulation,k=y*72+x;return s.free[k]+s.trapped[k]+s.hydride[k];},[+coords[1],+coords[2]]);const max=await page.evaluate(()=>{const s=ZrNbApp.simulation;return Math.max(...Array.from(s.free,(v,k)=>v+s.trapped[k]+s.hydride[k]));});assert.equal(local,max);
+ const before=await page.locator('#microCanvas').evaluate(c=>c.toDataURL());await page.click('[data-layer=hydride]');assert.equal(await page.locator('[data-layer=hydride]').getAttribute('aria-pressed'),'false');assert.notEqual(await page.locator('#microCanvas').evaluate(c=>c.toDataURL()),before);
+ await page.click('#allLayers');await page.click('[data-map=defects]');assert(await page.locator('#densityKey').isVisible());assert(await page.locator('[data-layer=free]').isDisabled());await page.click('#findHotspot');
+ await page.click('#panTool');const box=await page.locator('#microCanvas').boundingBox();const panBefore=await page.locator('#microCanvas').evaluate(c=>c.toDataURL());await page.mouse.move(box.x+box.width/2,box.y+box.height/2);await page.mouse.down();await page.mouse.move(box.x+box.width/2+100,box.y+box.height/2+50,{steps:8});await page.mouse.up();assert.notEqual(await page.locator('#microCanvas').evaluate(c=>c.toDataURL()),panBefore);
+ await page.click('[data-map=symbols]');await page.click('#inspectTool');await page.locator('#microCanvas').click({position:{x:180,y:150}});assert.match(await page.locator('#inspectorTitle').textContent(),/Cell/);await page.locator('#microCanvas').press('ArrowRight');assert.equal(await page.evaluate(()=>JSON.stringify(ZrNbApp.simulation.export())),state,'View interactions must not change simulation or RNG');
+ await page.mouse.move(0,0);await page.waitForTimeout(3500);await page.evaluate(()=>scrollTo(0,0));await page.screenshot({path:path.resolve(__dirname,'../qa/micro-interactive-desktop.png'),fullPage:true});
+ await page.setViewportSize({width:390,height:844});await page.screenshot({path:path.resolve(__dirname,'../qa/micro-interactive-mobile.png'),fullPage:true});assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
+ await page.click('#clearCell');assert.equal(await page.locator('#inspectorCounts>div').count(),0);await page.click('#fitMicro');assert.equal(await page.locator('#microZoom').inputValue(),'1');assert.deepEqual(errors,[]);await browser.close();console.log('PASS: single step, hotspot exactness, inspector, layer filtering, density, pan, keyboard selection, view-only state invariance, mobile layout.');
+})().catch(e=>{console.error(e);process.exit(1);});

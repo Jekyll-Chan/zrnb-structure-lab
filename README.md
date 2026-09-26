@@ -1,5 +1,7 @@
 # Zr–Nb Structure Lab 🔬
 
+**[Try the live lab →](https://jekyll-chan.github.io/zrnb-structure-lab/)** · [GitHub repository](https://github.com/Jekyll-Chan/zrnb-structure-lab)
+
 **What happens when hydrogen meets a zirconium alloy? Let's poke around and find out.**
 
 A little browser lab for a surprisingly busy material: hydrogen moves, defects appear, traps fill up, and hydride markers start showing up. Turn a few knobs, zoom into a grain, then hop over to the crystal and XRD explorers to connect the dots.
@@ -13,17 +15,9 @@ Built for learning about zirconium–niobium alloys, hydrogen and irradiation. T
 
 ## Open it and start exploring
 
-1. Download this repository: **Code → Download ZIP**.
-2. Unzip it and open **`index.html`** in your browser.
-3. Keep the accompanying files together. That's it — you're in.
+**[Open Zr–Nb Structure Lab in your browser](https://jekyll-chan.github.io/zrnb-structure-lab/)** — no installation needed.
 
-You can also serve the folder locally if you prefer:
-
-```sh
-python3 -m http.server 8876 --bind 127.0.0.1
-```
-
-Then visit **http://127.0.0.1:8876/**. Node.js is only needed for development tests, not to use the app.
+Want to use it offline? Download the files from the [GitHub repository](https://github.com/Jekyll-Chan/zrnb-structure-lab) using **Code → Download ZIP**, unzip them, and open **`index.html`**. Keep the accompanying files together. Node.js is only needed for development tests, not to use the app.
 
 ## Your first five minutes
 
